@@ -307,9 +307,9 @@ trainer.train()
 
 Open `demo/index.html` in your browser and load `training_log.json` (generated during training) to watch:
 
-- 🛸 **2D orbital view** — spacecraft moving in real time, thrust vectors, LOS cone, comms blackout overlays
-- 📈 **Reward curve** — building up episode by episode with moving average
-- 🧠 **Agent reasoning** — text evolving from random to deliberate across 200 episodes
+-  **2D orbital view** — spacecraft moving in real time, thrust vectors, LOS cone, comms blackout overlays
+-  **Reward curve** — building up episode by episode with moving average
+-  **Agent reasoning** — text evolving from random to deliberate across 200 episodes
 
 ---
 
