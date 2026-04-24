@@ -26,7 +26,7 @@ tags:
 [![Theme](https://img.shields.io/badge/Theme-3.1%20World%20Modeling-purple?style=flat-square)](#theme)
 [![Physics](https://img.shields.io/badge/Physics-CWH%20Equations-red?style=flat-square)](#physics)
 
-**Meta × HuggingFace OpenEnv Hackathon 2026 — Bangalore Finals**
+**Meta × HuggingFace OpenEnv Hackathon 2026 **
 
 [🚀 Live Environment](#quickstart) · [📓 Training Notebook](#training) · [📊 Results](#results) · [📝 Blog Post](#blog)
 
