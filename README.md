@@ -206,8 +206,8 @@ Every design decision maps to real aerospace engineering:
 ### Run the Environment Locally
 
 ```bash
-git clone https://github.com/Ridreb05/spacecraft-rendezvous-env
-cd spacecraft-rendezvous-env
+git clone https://github.com/Ridreb05/project-amaze
+cd project-amaze
 pip install -r requirements.txt
 
 # Start the server
@@ -316,7 +316,7 @@ Open `demo/index.html` in your browser and load `training_log.json` (generated d
 ## Project Structure
 
 ```
-spacecraft-rendezvous-env/
+project-amaze/
 ├── simulation/
 │   ├── cwh_dynamics.py          # CWH physics — State Transition Matrix, fuel, noise
 │   ├── scenario_generator.py    # Seeded scenarios with adaptive curriculum
