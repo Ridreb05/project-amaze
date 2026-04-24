@@ -1,6 +1,5 @@
 ---
 title: Spacecraft Rendezvous RL Environment
-emoji: 🛸
 colorFrom: blue
 colorTo: indigo
 sdk: docker
@@ -19,7 +18,7 @@ tags:
 
 # 🛸 Spacecraft Rendezvous RL Environment
 
-### *Teaching an LLM to Fly Spacecraft — the Same Challenge NASA Solved on the ISS in 2025*
+### *Teaching an LLM to Fly Spacecraft *
 
 [![OpenEnv](https://img.shields.io/badge/OpenEnv-compliant-blue?style=flat-square)](https://github.com/meta-pytorch/OpenEnv)
 [![HuggingFace](https://img.shields.io/badge/🤗-HuggingFace%20Spaces-yellow?style=flat-square)](https://huggingface.co/spaces)
@@ -38,8 +37,6 @@ tags:
 ## The Problem
 
 In May 2025, the US Naval Research Lab flew a reinforcement learning agent aboard the **International Space Station** — controlling Astrobee, a free-flying robot — with no human in the loop. The decision problem it solved: how do you maneuver a spacecraft near another spacecraft, with limited fuel, noisy sensors, and minutes-long communication blackouts, without crashing?
-
-> *Imagine parallel parking a car — but the car is moving at 28,000 km/h, your GPS cuts out every few minutes, and you only have enough fuel for 20 steering corrections total.*
 
 This is **spacecraft proximity operations**. Today it requires years of astronaut and controller training. We built an RL environment to train language models to do it — from reward signal alone.
 
@@ -131,7 +128,7 @@ The ±10 spread ensures GRPO can distinguish good episodes from bad ones and com
 
 ### Method: GRPO via Unsloth
 
-We use **Group Relative Policy Optimisation** — the algorithm behind DeepSeek-R1. For each scenario, GRPO generates 4–8 rollout attempts, scores each with the reward function, and updates the model to make higher-scoring trajectories more likely. No labelled data. No demonstrations. No hand-crafted rules.
+We use **Group Relative Policy Optimisation**. For each scenario, GRPO generates 4–8 rollout attempts, scores each with the reward function, and updates the model to make higher-scoring trajectories more likely. No labelled data. No demonstrations. No hand-crafted rules.
 
 ### Model: Qwen2.5-1.5B-Instruct
 
@@ -201,13 +198,6 @@ Every design decision maps to real aerospace engineering:
 | LOS cone ±45° | Keep-Out Zone compliance for docking corridor |
 | Comms blackout windows | Orbital mechanics — predictable loss-of-signal periods |
 | GRPO training approach | Mirrors APIARY pipeline: sim → validation → deployment |
-
-### The 5 Confirmed Real-World RL Deployments in Space:
-1. **OPS-SAT / HOPAS** (2021–2024) — Airbus RL attitude control on ESA nanosatellite
-2. **InnoCube / LeLaR** (Jan 2025) — World's first deep RL attitude controller in orbit
-3. **APIARY / Astrobee** (May 2025) — First RL control of free-flying robot on ISS (NRL)
-4. **Stanford / Astrobee navigation** (Dec 2025) — ML motion planning, 50–60% faster
-5. **Perseverance / AI Mars drive** (Dec 2025) — First AI-planned autonomous rover drives
 
 ---
 
@@ -369,9 +359,9 @@ spacecraft-rendezvous-env/
 
 ## Links
 
-- 🌐 **HuggingFace Space**: [https://huggingface.co/spaces/Ridreb05/spacecraft-rendezvous-env](https://huggingface.co/spaces/Ridreb05/spacecraft-rendezvous-env)
+- 🌐 **HuggingFace Space**: [https://huggingface.co/spaces/Ridreb05/project-amaze](https://huggingface.co/spaces/Ridreb05/project-amaze)
 - 📓 **Training Notebook**: [training/spacecraft_grpo_colab.ipynb](training/spacecraft_grpo_colab.ipynb)
-- 📝 **Blog Post**: [HuggingFace Blog](https://huggingface.co/blog/Ridreb05/spacecraft-rendezvous-grpo)
+- 📝 **Blog Post**: [HuggingFace Blog](https://huggingface.co/blog/Ridreb05/project-amaze)
 - 📊 **WandB Run**: [Reward Curves](https://wandb.ai)
 - 🎥 **Demo Video**: [YouTube](https://youtube.com)
 
@@ -379,11 +369,11 @@ spacecraft-rendezvous-env/
 
 ## Author
 
-**Debanik Das** — Scaler School of Technology  
-Meta × HuggingFace OpenEnv Hackathon 2026 — Bangalore Finals
+**Team Noir**  
+Meta × HuggingFace OpenEnv Hackathon 2026 
 
 ---
 
 <div align="center">
-<i>"The same decision problem that flew on the ISS in 2025 — now open-source and trainable."</i>
+<i>"Amaze, amaze, amaze"</i>
 </div>
