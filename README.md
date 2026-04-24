@@ -16,7 +16,7 @@ tags:
 
 <div align="center">
 
-# 🛸 Spacecraft Rendezvous RL Environment
+#  Spacecraft Rendezvous RL Environment
 
 ### *Teaching an LLM to Fly Spacecraft *
 
