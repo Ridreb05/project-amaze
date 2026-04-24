@@ -75,7 +75,7 @@ The agent responds:
 
 ---
 
-## What Makes This Hard
+## Problem Constraints
 
 Three constraints work together to force genuine multi-step planning:
 
