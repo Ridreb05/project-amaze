@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spacecraft Rendezvous — GRPO Training Replay</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #2a3a55;
+    --blue: #3b82f6;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --font: 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    color: var(--blue);
+    letter-spacing: 0.05em;
+  }
+
+  header p {
+    font-size: 0.75rem;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .panel-title {
+    font-size: 0.7rem;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Orbital View ── */
+  #orbital-canvas {
+    width: 100%;
+    aspect-ratio: 1;
+    background: radial-gradient(ellipse at center, #0d1b2a 0%, #050a12 100%);
+    border-radius: 6px;
+    cursor: crosshair;
+  }
+
+  /* ── Reward Curve ── */
+  #reward-chart-container {
+    position: relative;
+    height: 200px;
+  }
+
+  /* ── Agent Reasoning ── */
+  #reasoning-panel {
+    grid-column: span 2;
+  }
+
+  .reasoning-box {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    min-height: 80px;
+    border-left: 3px solid var(--green);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .reasoning-box.bad {
+    border-left-color: var(--red);
+  }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--blue);
+  }
+
+  .stat-val.green { color: var(--green); }
+  .stat-val.amber { color: var(--amber); }
+  .stat-val.red   { color: var(--red); }
+
+  .stat-lbl {
+    font-size: 0.65rem;
+    color: var(--text2);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  button {
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-family: var(--font);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.danger { background: var(--red); }
+  button.success { background: var(--green); }
+
+  .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--text2);
+  }
+
+  input[type=range] {
+    width: 80px;
+    accent-color: var(--blue);
+  }
+
+  select {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-family: var(--font);
+    font-size: 0.78rem;
+  }
+
+  .status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: bold;
+  }
+
+  .badge-running { background: rgba(59,130,246,0.2); color: var(--blue); border: 1px solid var(--blue); }
+  .badge-success { background: rgba(16,185,129,0.2); color: var(--green); border: 1px solid var(--green); }
+  .badge-fail    { background: rgba(239,68,68,0.2);  color: var(--red);   border: 1px solid var(--red); }
+  .badge-idle    { background: rgba(148,163,184,0.1); color: var(--text2); border: 1px solid var(--border); }
+
+  .log-line { font-size: 0.72rem; color: var(--text2); margin-top: 4px; }
+
+  #episode-label {
+    font-size: 0.8rem;
+    color: var(--text2);
+    padding: 6px 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛸 SPACECRAFT RENDEZVOUS — GRPO TRAINING REPLAY</h1>
+  <p>Watch the LLM agent learn autonomous proximity operations across 200 training episodes</p>
+</header>
+
+<!-- Stats -->
+<div class="stats-row">
+  <div class="stat">
+    <div class="stat-val" id="stat-episode">0</div>
+    <div class="stat-lbl">Episode</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="stat-reward">—</div>
+    <div class="stat-lbl">Episode Reward</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val green" id="stat-dock-rate">0%</div>
+    <div class="stat-lbl">Dock Rate</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val amber" id="stat-fuel">—</div>
+    <div class="stat-lbl">Fuel Remaining</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="stat-steps">—</div>
+    <div class="stat-lbl">Steps Taken</div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button id="btn-load" onclick="loadLog()">📂 Load training_log.json</button>
+  <button id="btn-play" onclick="playAll()" disabled>▶ Play All Episodes</button>
+  <button id="btn-pause" onclick="pauseResume()" disabled>⏸ Pause</button>
+  <button id="btn-prev" onclick="jumpEpisode(-1)" disabled>◀ Prev</button>
+  <button id="btn-next" onclick="jumpEpisode(+1)" disabled>▶ Next</button>
+  <div class="speed-control">
+    <span>Speed</span>
+    <input type="range" id="speed-slider" min="1" max="20" value="8">
+    <span id="speed-val">8x</span>
+  </div>
+  <select id="episode-select" onchange="jumpToEpisode(parseInt(this.value))" disabled>
+    <option value="-1">Jump to episode...</option>
+  </select>
+  <span class="status-badge badge-idle" id="status-badge">IDLE</span>
+  <span id="episode-label">No data loaded</span>
+</div>
+
+<!-- Main grid -->
+<div class="main-grid">
+
+  <!-- Orbital View -->
+  <div class="panel">
+    <div class="panel-title">🛸 Orbital View — LVLH Frame</div>
+    <canvas id="orbital-canvas"></canvas>
+  </div>
+
+  <!-- Reward Curve -->
+  <div class="panel">
+    <div class="panel-title">📈 Reward Curve — Training Progress</div>
+    <div id="reward-chart-container">
+      <canvas id="reward-chart"></canvas>
+    </div>
+    <div class="log-line" id="reward-annotation">Load training_log.json to see reward curve</div>
+  </div>
+
+  <!-- Reasoning Panel -->
+  <div class="panel" id="reasoning-panel">
+    <div class="panel-title">🧠 Agent Reasoning — Step by Step</div>
+    <div class="reasoning-box" id="reasoning-text">
+Waiting for episode data...
+
+The agent will display its flight controller reasoning here as each step plays.
+
+Early training:  "thrust_x: 2.0" — random, no context
+Late training:   "Decelerating for terminal approach — conserving fuel for attitude correction at 10m range"
+
+Load training_log.json to begin the replay.
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────
+let trainingData = null;
+let currentEpisodeIdx = 0;
+let currentStepIdx = 0;
+let isPlaying = false;
+let playTimer = null;
+let rewardChart = null;
+let rewardChartData = { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', borderWidth: 1.5, pointRadius: 0, fill: true }] };
+let dockedSoFar = 0;
+
+// Canvas
+const canvas = document.getElementById('orbital-canvas');
+const ctx = canvas.getContext('2d');
+
+// ─────────────────────────────────────────────────────────────────
+// Load log file
+// ─────────────────────────────────────────────────────────────────
+function loadLog() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        trainingData = JSON.parse(ev.target.result);
+        initFromData();
+      } catch(err) {
+        alert('Invalid JSON: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function initFromData() {
+  const n = trainingData.episodes.length;
+  document.getElementById('episode-label').textContent = `${n} episodes loaded`;
+  setBadge('LOADED', 'badge-idle');
+
+  // Populate episode selector
+  const sel = document.getElementById('episode-select');
+  sel.innerHTML = '<option value="-1">Jump to episode...</option>';
+  trainingData.episodes.forEach((ep, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `Ep ${ep.episode} — ${ep.difficulty} — ${ep.docked ? '✓ DOCKED' : '✗ failed'}`;
+    sel.appendChild(opt);
+  });
+  sel.disabled = false;
+
+  // Init reward chart
+  initRewardChart(trainingData.reward_curve);
+
+  // Enable buttons
+  document.getElementById('btn-play').disabled = false;
+  document.getElementById('btn-prev').disabled = false;
+  document.getElementById('btn-next').disabled = false;
+
+  // Show first episode
+  currentEpisodeIdx = 0;
+  currentStepIdx = 0;
+  dockedSoFar = 0;
+  renderStep(0, 0);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Reward Chart
+// ─────────────────────────────────────────────────────────────────
+function initRewardChart(rewards) {
+  const chartCanvas = document.getElementById('reward-chart');
+
+  if (rewardChart) rewardChart.destroy();
+
+  const labels = rewards.map((_, i) => i + 1);
+  const smoothed = smoothRewards(rewards, 10);
+
+  rewardChart = new Chart(chartCanvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Episode Reward',
+          data: rewards,
+          borderColor: 'rgba(59,130,246,0.3)',
+          backgroundColor: 'transparent',
+          borderWidth: 0.8,
+          pointRadius: 0,
+        },
+        {
+          label: 'Moving Average (10)',
+          data: smoothed,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16,185,129,0.1)',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: {
+          labels: { color: '#94a3b8', font: { family: 'Courier New', size: 10 }, boxWidth: 12 }
+        },
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Training Episode', color: '#94a3b8', font: { size: 10 } },
+          ticks: { color: '#64748b', maxTicksLimit: 10, font: { size: 9 } },
+          grid: { color: 'rgba(42,58,85,0.5)' },
+        },
+        y: {
+          title: { display: true, text: 'Episode Reward', color: '#94a3b8', font: { size: 10 } },
+          ticks: { color: '#64748b', font: { size: 9 } },
+          grid: { color: 'rgba(42,58,85,0.5)' },
+        }
+      }
+    }
+  });
+}
+
+function smoothRewards(arr, window) {
+  return arr.map((_, i) => {
+    const start = Math.max(0, i - window + 1);
+    const slice = arr.slice(start, i + 1);
+    return slice.reduce((a, b) => a + b, 0) / slice.length;
+  });
+}
+
+function highlightEpisodeOnChart(episodeIdx) {
+  if (!rewardChart) return;
+  // Add vertical line annotation for current episode
+  rewardChart.options.plugins.annotation = {
+    annotations: {
+      currentLine: {
+        type: 'line',
+        xMin: episodeIdx,
+        xMax: episodeIdx,
+        borderColor: '#f59e0b',
+        borderWidth: 1.5,
+        borderDash: [4, 3],
+      }
+    }
+  };
+  rewardChart.update('none');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Orbital Canvas Rendering
+// ─────────────────────────────────────────────────────────────────
+function getCanvasScale() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetWidth; // square
+  const ep = trainingData?.episodes[currentEpisodeIdx];
+  if (!ep) return { cx: canvas.width/2, cy: canvas.height/2, scale: 1 };
+
+  // Find max distance for scale
+  const maxDist = Math.max(
+    ...ep.trajectory.map(s => Math.sqrt(s.x_m**2 + s.y_m**2)),
+    ep.initial_distance_m,
+    10,
+  );
+  const margin = 0.15;
+  const scale = (canvas.width / 2 * (1 - margin)) / maxDist;
+  return { cx: canvas.width/2, cy: canvas.height/2, scale };
+}
+
+function drawOrbital(episodeIdx, stepIdx) {
+  const ep = trainingData?.episodes[episodeIdx];
+  if (!ep) return;
+
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetWidth;
+
+  const { cx, cy, scale } = getCanvasScale();
+
+  // Background stars
+  ctx.fillStyle = '#0a0e1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  drawStars();
+
+  // Grid
+  drawGrid(cx, cy, scale);
+
+  // LOS cone (±45° from +y axis — along-track docking direction)
+  drawLOSCone(cx, cy, scale);
+
+  // Trajectory trail
+  const trail = ep.trajectory.slice(0, stepIdx + 1);
+  if (trail.length > 1) {
+    ctx.beginPath();
+    ctx.strokeStyle = ep.docked ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.3)';
+    ctx.lineWidth = 1.5;
+    trail.forEach((s, i) => {
+      const px = cx + s.y_m * scale;  // along-track = horizontal
+      const py = cy - s.x_m * scale;  // radial = vertical
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    });
+    ctx.stroke();
+  }
+
+  // Target spacecraft (origin)
+  drawTarget(cx, cy);
+
+  // Chaser spacecraft (current step)
+  const step = ep.trajectory[stepIdx] || ep.trajectory[ep.trajectory.length - 1];
+  if (step) {
+    const px = cx + step.y_m * scale;
+    const py = cy - step.x_m * scale;
+    drawChaser(px, py, step);
+
+    // Distance line
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(148,163,184,0.2)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 0.8;
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Distance label
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px Courier New';
+    ctx.fillText(`${step.distance_m.toFixed(1)}m`, (cx + px)/2 + 5, (cy + py)/2);
+  }
+
+  // HUD
+  drawHUD(ep, step, stepIdx);
+}
+
+function drawStars() {
+  // Deterministic star field based on canvas size
+  const rng = mulberry32(12345);
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  for (let i = 0; i < 80; i++) {
+    const x = rng() * canvas.width;
+    const y = rng() * canvas.height;
+    const r = rng() * 1.2;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let z = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    z = z + Math.imul(z ^ z >>> 7, 61 | z) ^ z;
+    return ((z ^ z >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function drawGrid(cx, cy, scale) {
+  const gridSpacing = [10, 25, 50, 100, 200].find(s => s * scale > 30) || 200;
+  ctx.strokeStyle = 'rgba(42,58,85,0.4)';
+  ctx.lineWidth = 0.5;
+  for (let d = -6; d <= 6; d++) {
+    const x = cx + d * gridSpacing * scale;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    const y = cy + d * gridSpacing * scale;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+  }
+}
+
+function drawLOSCone(cx, cy, scale) {
+  const coneRange = 50 * scale;
+  const coneAngle = Math.PI / 4; // ±45°
+  // Docking axis: along +y (positive along-track)
+  ctx.fillStyle = 'rgba(16,185,129,0.06)';
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.arc(cx, cy, coneRange, -Math.PI/2 - coneAngle, -Math.PI/2 + coneAngle);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(16,185,129,0.3)';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.sin(coneAngle) * coneRange, cy - Math.cos(coneAngle) * coneRange);
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx - Math.sin(coneAngle) * coneRange, cy - Math.cos(coneAngle) * coneRange);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = 'rgba(16,185,129,0.4)';
+  ctx.font = '9px Courier New';
+  ctx.fillText('LOS CONE', cx - 25, cy - coneRange - 4);
+}
+
+function drawTarget(cx, cy) {
+  // Target: crosshair + rings
+  const r = 8;
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 1.5;
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 1.8, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Cross
+  ctx.beginPath();
+  ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
+  ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+  ctx.stroke();
+
+  // Label
+  ctx.fillStyle = '#f59e0b';
+  ctx.font = 'bold 9px Courier New';
+  ctx.fillText('TARGET', cx + 12, cy - 8);
+
+  // Docking zone ring
+  ctx.strokeStyle = 'rgba(245,158,11,0.3)';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([2, 4]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, 0.5 * 1, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawChaser(px, py, step) {
+  const docked = step.distance_m < 1.0;
+  const color = docked ? '#10b981' : (step.los_violation ? '#ef4444' : '#3b82f6');
+
+  // Thruster visualization
+  const mag = Math.sqrt(step.fx**2 + step.fy**2);
+  if (mag > 0.05) {
+    const thrustX = step.fy * 15;   // along-track maps to horizontal
+    const thrustY = -step.fx * 15;  // radial maps to vertical
+    ctx.strokeStyle = 'rgba(245,158,11,0.7)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(px - thrustX, py - thrustY);
+    ctx.stroke();
+
+    // Thruster glow
+    ctx.fillStyle = `rgba(245,158,11,${0.2 + mag * 0.15})`;
+    ctx.beginPath();
+    ctx.arc(px - thrustX, py - thrustY, 3 + mag * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Comms blackout indicator
+  if (!step.comms_active) {
+    ctx.strokeStyle = 'rgba(239,68,68,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.arc(px, py, 14, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Spacecraft body
+  ctx.fillStyle = color;
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(px, py, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Solar panels
+  ctx.fillStyle = 'rgba(148,163,184,0.6)';
+  ctx.fillRect(px - 14, py - 2, 6, 4);
+  ctx.fillRect(px + 8, py - 2, 6, 4);
+
+  // Label
+  ctx.fillStyle = color;
+  ctx.font = 'bold 9px Courier New';
+  ctx.fillText('CHASER', px + 10, py + 3);
+}
+
+function drawHUD(ep, step, stepIdx) {
+  if (!step) return;
+
+  ctx.font = '9px Courier New';
+
+  // Top-left HUD
+  const lines = [
+    `EP ${ep.episode} | ${ep.difficulty.toUpperCase()}`,
+    `STEP ${stepIdx + 1}/${ep.trajectory.length}`,
+    `DIST: ${step.distance_m.toFixed(1)}m`,
+    `FUEL: ${step.fuel_pct.toFixed(0)}%`,
+    `COMMS: ${step.comms_active ? 'ACTIVE' : '⚠ BLACKOUT'}`,
+    `REWARD: ${step.reward > 0 ? '+' : ''}${step.reward.toFixed(3)}`,
+  ];
+
+  lines.forEach((line, i) => {
+    const isWarn = line.includes('BLACKOUT') || line.includes('⚠');
+    ctx.fillStyle = isWarn ? '#ef4444' : 'rgba(148,163,184,0.8)';
+    ctx.fillText(line, 8, 16 + i * 14);
+  });
+
+  // Episode result overlay
+  if (stepIdx >= ep.trajectory.length - 1) {
+    ctx.fillStyle = ep.docked ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.10)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = ep.docked ? '#10b981' : '#ef4444';
+    ctx.font = 'bold 18px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText(ep.docked ? '✓ DOCKING SUCCESSFUL' : '✗ MISSION FAILED', canvas.width/2, canvas.height/2 - 8);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '11px Courier New';
+    ctx.fillText(`${ep.steps_taken} steps | fuel ${ep.fuel_remaining_pct.toFixed(0)}% | reward ${ep.total_reward.toFixed(2)}`, canvas.width/2, canvas.height/2 + 16);
+    ctx.textAlign = 'left';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Rendering a step
+// ─────────────────────────────────────────────────────────────────
+function renderStep(episodeIdx, stepIdx) {
+  if (!trainingData) return;
+  const ep = trainingData.episodes[episodeIdx];
+  if (!ep) return;
+
+  drawOrbital(episodeIdx, stepIdx);
+
+  // Reasoning text
+  const step = ep.trajectory[stepIdx];
+  const reasoningEl = document.getElementById('reasoning-text');
+
+  if (step) {
+    const quality = step.reward > 0.5 ? 'good' : step.reward < -0.3 ? 'bad' : 'ok';
+    reasoningEl.className = `reasoning-box ${quality === 'bad' ? 'bad' : ''}`;
+
+    const commsStatus = step.comms_active ? '' : '\n⚠ [COMMS BLACKOUT — flying blind]';
+    const losStatus = step.los_violation ? '\n⚠ [LOS CONE VIOLATION]' : '';
+
+    reasoningEl.textContent =
+      `Episode ${ep.episode} | Step ${stepIdx + 1}/${ep.trajectory.length} | ${ep.difficulty}\n` +
+      `─────────────────────────────────────────────────────\n` +
+      `Thrust: fx=${step.fx.toFixed(3)}N, fy=${step.fy.toFixed(3)}N\n` +
+      `Distance: ${step.distance_m.toFixed(2)}m | Fuel: ${step.fuel_pct.toFixed(0)}%\n` +
+      `Step reward: ${step.reward >= 0 ? '+' : ''}${step.reward.toFixed(4)}${commsStatus}${losStatus}\n\n` +
+      `Agent reasoning:\n"${step.reasoning || '[No reasoning provided]'}"`;
+  }
+
+  // Update stats
+  updateStats(episodeIdx, ep);
+
+  // Highlight on reward chart
+  highlightEpisodeOnChart(episodeIdx);
+}
+
+function updateStats(episodeIdx, ep) {
+  const eps = trainingData.episodes.slice(0, episodeIdx + 1);
+  dockedSoFar = eps.filter(e => e.docked).length;
+
+  document.getElementById('stat-episode').textContent = ep.episode;
+  document.getElementById('stat-reward').textContent = ep.total_reward.toFixed(2);
+
+  const dockEl = document.getElementById('stat-dock-rate');
+  const dockRate = (dockedSoFar / (episodeIdx + 1) * 100).toFixed(0);
+  dockEl.textContent = `${dockRate}%`;
+  dockEl.className = `stat-val ${parseInt(dockRate) > 40 ? 'green' : parseInt(dockRate) > 15 ? 'amber' : 'red'}`;
+
+  document.getElementById('stat-fuel').textContent = `${ep.fuel_remaining_pct.toFixed(0)}%`;
+  document.getElementById('stat-steps').textContent = ep.steps_taken;
+
+  const rewardEl = document.getElementById('stat-reward');
+  rewardEl.className = `stat-val ${ep.total_reward > 2 ? 'green' : ep.total_reward < 0 ? 'red' : 'amber'}`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Playback controls
+// ─────────────────────────────────────────────────────────────────
+function playAll() {
+  if (!trainingData) return;
+  isPlaying = true;
+  document.getElementById('btn-pause').disabled = false;
+  document.getElementById('btn-play').disabled = true;
+  setBadge('PLAYING', 'badge-running');
+  playNextStep();
+}
+
+function playNextStep() {
+  if (!isPlaying || !trainingData) return;
+
+  const ep = trainingData.episodes[currentEpisodeIdx];
+  if (!ep) { stopPlay(); return; }
+
+  renderStep(currentEpisodeIdx, currentStepIdx);
+
+  const speed = parseInt(document.getElementById('speed-slider').value);
+  const delay = Math.max(30, 500 / speed);
+
+  currentStepIdx++;
+
+  if (currentStepIdx >= ep.trajectory.length) {
+    // End of episode — show final frame briefly then next episode
+    setBadge(ep.docked ? 'DOCKED ✓' : 'FAILED ✗', ep.docked ? 'badge-success' : 'badge-fail');
+
+    setTimeout(() => {
+      currentEpisodeIdx++;
+      currentStepIdx = 0;
+
+      if (currentEpisodeIdx >= trainingData.episodes.length) {
+        stopPlay();
+        setBadge('COMPLETE', 'badge-success');
+      } else {
+        if (isPlaying) playNextStep();
+      }
+    }, ep.docked ? 1200 : 800);
+  } else {
+    playTimer = setTimeout(playNextStep, delay);
+  }
+}
+
+function pauseResume() {
+  if (isPlaying) {
+    isPlaying = false;
+    clearTimeout(playTimer);
+    document.getElementById('btn-pause').textContent = '▶ Resume';
+    setBadge('PAUSED', 'badge-idle');
+  } else {
+    isPlaying = true;
+    document.getElementById('btn-pause').textContent = '⏸ Pause';
+    setBadge('PLAYING', 'badge-running');
+    playNextStep();
+  }
+}
+
+function stopPlay() {
+  isPlaying = false;
+  clearTimeout(playTimer);
+  document.getElementById('btn-play').disabled = false;
+  document.getElementById('btn-pause').disabled = true;
+  document.getElementById('btn-pause').textContent = '⏸ Pause';
+}
+
+function jumpEpisode(delta) {
+  if (!trainingData) return;
+  stopPlay();
+  currentEpisodeIdx = Math.max(0, Math.min(trainingData.episodes.length - 1, currentEpisodeIdx + delta));
+  currentStepIdx = 0;
+  renderStep(currentEpisodeIdx, 0);
+  document.getElementById('episode-select').value = currentEpisodeIdx;
+}
+
+function jumpToEpisode(idx) {
+  if (!trainingData || idx < 0) return;
+  stopPlay();
+  currentEpisodeIdx = idx;
+  currentStepIdx = 0;
+  renderStep(currentEpisodeIdx, 0);
+}
+
+function setBadge(text, cls) {
+  const el = document.getElementById('status-badge');
+  el.textContent = text;
+  el.className = `status-badge ${cls}`;
+}
+
+// Speed label update
+document.getElementById('speed-slider').addEventListener('input', function() {
+  document.getElementById('speed-val').textContent = `${this.value}x`;
+});
+
+// Resize canvas on window resize
+window.addEventListener('resize', () => {
+  if (trainingData) renderStep(currentEpisodeIdx, currentStepIdx);
+});
+
+// Initial canvas size
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetWidth;
+ctx.fillStyle = '#0a0e1a';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ctx.fillStyle = '#94a3b8';
+ctx.font = '13px Courier New';
+ctx.textAlign = 'center';
+ctx.fillText('Load training_log.json to begin', canvas.width/2, canvas.height/2);
+ctx.textAlign = 'left';
+</script>
+</body>
+</html>
