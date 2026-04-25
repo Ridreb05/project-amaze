@@ -118,6 +118,16 @@ async def reset(request: ResetRequest):
 
 @app.post("/step", response_model=StepResponse, tags=["Environment"])
 async def step(request: StepRequest):
+    try:
+        response = env.step(request.action)
+        return response
+    except RuntimeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import traceback
+        tb = traceback.format_exc()
+        logger.error(f"Step error: {tb}")
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)} | {tb}")
     """
     Apply one action and advance the environment.
 
