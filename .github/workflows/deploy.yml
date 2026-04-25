@@ -10,16 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
 
-      - name: Push to HuggingFace Spaces
+      - name: Deploy to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git config --global user.email "deploy@github.com"
           git config --global user.name "GitHub Actions"
-          git push https://Ridreb05:$HF_TOKEN@huggingface.co/spaces/Ridreb05/project-amaze main --force
+
+          # Clone empty HF Space repo
+          git clone https://Ridreb05:$HF_TOKEN@huggingface.co/spaces/Ridreb05/project-amaze hf-space
+
+          # Copy files (exclude .git)
+          rsync -av --delete ./ hf-space/ --exclude .git
+
+          cd hf-space
+
+          # Commit & push only current state (no old history)
+          git add .
+          git commit -m "Deploy from GitHub Actions" || echo "No changes to commit"
+          git push
