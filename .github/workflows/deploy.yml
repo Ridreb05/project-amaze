@@ -20,15 +20,18 @@ jobs:
           git config --global user.email "deploy@github.com"
           git config --global user.name "GitHub Actions"
 
-          # Clone empty HF Space repo
+          # Clone HF Space
           git clone https://Ridreb05:$HF_TOKEN@huggingface.co/spaces/Ridreb05/project-amaze hf-space
 
-          # Copy files (exclude .git)
-          rsync -av --delete ./ hf-space/ --exclude .git
+          # Copy files safely (IMPORTANT: exclude hf-space itself)
+          rsync -av --delete \
+            --exclude ".git" \
+            --exclude "hf-space" \
+            --exclude ".github" \
+            ./ hf-space/
 
           cd hf-space
 
-          # Commit & push only current state (no old history)
           git add .
           git commit -m "Deploy from GitHub Actions" || echo "No changes to commit"
           git push
