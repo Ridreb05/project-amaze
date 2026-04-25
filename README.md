@@ -17,6 +17,7 @@ tags:
 <div align="center">
 
 #  Project Amaze
+<img src="assets/logo.jpeg" alt"Logo" width "600" />
 
 ### *Teaching an LLM to Fly Spacecraft *
 
