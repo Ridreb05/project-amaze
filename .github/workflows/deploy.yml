@@ -20,14 +20,17 @@ jobs:
           git config --global user.email "deploy@github.com"
           git config --global user.name "GitHub Actions"
 
-          # Clone HF Space
           git clone https://Ridreb05:$HF_TOKEN@huggingface.co/spaces/Ridreb05/project-amaze hf-space
 
-          # Copy files safely (IMPORTANT: exclude hf-space itself)
+          # 🚨 EXCLUDE binaries here
           rsync -av --delete \
             --exclude ".git" \
-            --exclude "hf-space" \
             --exclude ".github" \
+            --exclude "hf-space" \
+            --exclude "*.png" \
+            --exclude "*.jpg" \
+            --exclude "*.jpeg" \
+            --exclude "*.ipynb" \
             ./ hf-space/
 
           cd hf-space
