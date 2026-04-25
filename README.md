@@ -21,7 +21,7 @@ tags:
 ### *Teaching an LLM to Fly Spacecraft *
 
 [![OpenEnv](https://img.shields.io/badge/OpenEnv-compliant-blue?style=flat-square)](https://github.com/meta-pytorch/OpenEnv)
-[![HuggingFace](https://img.shields.io/badge/🤗-HuggingFace%20Spaces-yellow?style=flat-square)(https://huggingface.co/spaces/Ridreb05/project-amaze)
+[![HuggingFace](https://img.shields.io/badge/🤗-HuggingFace%20Spaces-yellow?style=flat-square)](https://huggingface.co/spaces/Ridreb05/project-amaze)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
 [![Theme](https://img.shields.io/badge/Theme-3.1%20World%20Modeling-purple?style=flat-square)](#theme)
 [![Physics](https://img.shields.io/badge/Physics-CWH%20Equations-red?style=flat-square)](#physics)
