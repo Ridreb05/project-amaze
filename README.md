@@ -1,5 +1,5 @@
 ---
-title: Spacecraft Rendezvous RL Environment
+title: Project Amaze
 colorFrom: blue
 colorTo: indigo
 sdk: docker
@@ -16,7 +16,7 @@ tags:
 
 <div align="center">
 
-#  Spacecraft Rendezvous RL Environment
+#  Project Amaze
 
 ### *Teaching an LLM to Fly Spacecraft *
 
