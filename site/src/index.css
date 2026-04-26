@@ -7,8 +7,8 @@
 
 :root {
   --bg: #02050f;
-  --surface: rgba(255, 255, 255, 0.05);
-  --surface2: rgba(255, 255, 255, 0.08); /* More translucent white */
+  --surface: rgba(255, 255, 255, 0.12);
+  --surface2: rgba(255, 255, 255, 0.18); /* More visible translucent white */
   --border: rgba(255, 255, 255, 0.15);
   --blue: rgba(255, 255, 255, 0.8); /* Translucent white instead of blue */
   --green: rgba(255, 255, 255, 0.8);
@@ -298,7 +298,7 @@ header p {
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.05); /* True glass background */
+  background: var(--surface); /* True glass background */
   border: 1px solid rgba(255, 255, 255, 0.15); /* Subtle white border */
   border-radius: 16px;
   padding: 16px;
@@ -351,7 +351,7 @@ header p {
 }
 
 .reasoning-box {
-  background: rgba(255, 255, 255, 0.05); /* Glass */
+  background: var(--surface); /* Glass */
   border-radius: 12px;
   padding: 14px;
   font-family: var(--mono);
@@ -383,7 +383,7 @@ header p {
 }
 
 .stat {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   padding: 12px;
@@ -424,7 +424,7 @@ header p {
   margin-left: 0;
   margin-right: 0;
 
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface);
   padding: 14px 20px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -458,7 +458,7 @@ header p {
 .btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface);
   box-shadow: none;
 }
 
@@ -584,7 +584,7 @@ select:disabled {
   width: 80%;
   max-width: 900px;
   max-height: 80vh;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
   backdrop-filter: blur(32px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;

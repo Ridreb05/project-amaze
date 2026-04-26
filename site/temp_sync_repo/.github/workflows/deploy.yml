@@ -1,0 +1,40 @@
+name: Deploy to HuggingFace Spaces
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Deploy to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "deploy@github.com"
+          git config --global user.name "GitHub Actions"
+
+          git clone https://Ridreb05:$HF_TOKEN@huggingface.co/spaces/Ridreb05/project-amaze hf-space
+
+          # 🚨 EXCLUDE binaries here
+          rsync -av --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            --exclude "hf-space" \
+            --exclude "*.png" \
+            --exclude "*.jpg" \
+            --exclude "*.jpeg" \
+            --exclude "*.ipynb" \
+            ./ hf-space/
+
+          cd hf-space
+
+          git add .
+          git commit -m "Deploy from GitHub Actions" || echo "No changes to commit"
+          git push
