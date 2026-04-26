@@ -19,7 +19,6 @@ tags:
 
 <img src="assets/logo.jpeg" alt="Logo" width= "1000" />
 
-### *Teaching an LLM to Fly Spacecraft *
 
 [![OpenEnv](https://img.shields.io/badge/OpenEnv-compliant-blue?style=flat-square)](https://github.com/meta-pytorch/OpenEnv)
 [![HuggingFace](https://img.shields.io/badge/🤗-HuggingFace%20Spaces-yellow?style=flat-square)](https://huggingface.co/spaces/Ridreb05/project-amaze)
@@ -37,10 +36,18 @@ Meta × HuggingFace OpenEnv Hackathon 2026
 
 ## The Problem
 
-In May 2025, the US Naval Research Lab flew a reinforcement learning agent aboard the **International Space Station** — controlling Astrobee, a free-flying robot — with no human in the loop. The decision problem it solved: how do you maneuver a spacecraft near another spacecraft, with limited fuel, noisy sensors, and minutes-long communication blackouts, without crashing?
+In May 2025, the U.S. Naval Research Laboratory deployed a reinforcement learning agent aboard the International Space Station, controlling NASA's Astrobee free-flying robot autonomously, with no human in the loop.
 
-This is **spacecraft proximity operations**. Today it requires years of astronaut and controller training. We built an RL environment to train language models to do it — from reward signal alone.
+While Astrobee operates inside the station (handling inspection, navigation, and routine tasks), it demonstrates something much bigger: autonomous decision-making in safety-critical space environments under uncertainty.
 
+We focussed on a harder, closely related challenge: How do you maneuver a spacecraft near another spacecraft — with limited fuel, noisy sensors, and communication delays — without collision?
+
+This is known as spacecraft proximity operations, the foundation of rendezvous and docking. Today, this task:
+
+Requires years of astronaut and ground-controller training
+Relies heavily on carefully engineered control systems
+Assumes continuous human oversight
+We built an RL environment to train language models to handle it — from reward signal alone.
 ---
 
 ## What We Built
@@ -157,15 +164,6 @@ To ensure non-zero reward in early episodes (critical for GRPO convergence):
 ![Reward Curve](assets/reward_curve.png)
 *Episode reward over 200 GRPO training episodes. Green line = 10-episode moving average. Untrained baseline consistently scores −2. Trained agent reaches +4 average by episode 200.*
 
-### Before vs After Training
-
-| Metric | Untrained (Greedy) | After 200 GRPO Episodes |
-|---|---|---|
-| Docking Success Rate | 0% | **~60%** (easy), **~35%** (medium) |
-| Mean Episode Reward | −1.8 | **+3.2** |
-| Mean Final Distance | 120m | **< 2m** |
-| Fuel Efficiency | 0% remaining | **~40%** remaining |
-| Reasoning Quality | Random thrust values | Structured flight controller language |
 
 ### Agent Reasoning: Before vs After
 
