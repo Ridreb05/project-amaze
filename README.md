@@ -28,7 +28,7 @@ tags:
 
 Meta × HuggingFace OpenEnv Hackathon 2026 
 
-[🚀 Live Environment](#quickstart) · [📓 Training Notebook](#training) · [📊 Results](#results) · [📝 Blog Post](#blog)
+[🚀 Live Environment](https://huggingface.co/spaces/Ridreb05/project-amaze) · [📓 Training Notebook](https://colab.research.google.com/#fileId=https%3A//huggingface.co/spaces/Ridreb05/project-amaze/blob/main/training/spacecraft_grpo_colab.ipynb) · [📝 Blog Post](https://huggingface.co/spaces/Ridreb05/project-amaze/blob/main/blog/blog.md)
 
 </div>
 
