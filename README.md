@@ -48,6 +48,7 @@ Requires years of astronaut and ground-controller training
 Relies heavily on carefully engineered control systems
 Assumes continuous human oversight
 We built an RL environment to train language models to handle it — from reward signal alone.
+
 ---
 
 ## What We Built
