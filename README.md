@@ -358,11 +358,9 @@ project-amaze/
 
 ## Links
 
-- 🌐 **HuggingFace Space**: [https://huggingface.co/spaces/Ridreb05/project-amaze](https://huggingface.co/spaces/Ridreb05/project-amaze)
-- 📓 **Training Notebook**: [training/spacecraft_grpo_colab.ipynb](training/spacecraft_grpo_colab.ipynb)
-- 📝 **Blog Post**: [HuggingFace Blog](https://huggingface.co/blog/Ridreb05/project-amaze)
-- 📊 **WandB Run**: [Reward Curves](https://wandb.ai)
-- 🎥 **Demo Video**: [YouTube](https://youtube.com)
+- 🌐 **HuggingFace Space**: [Project Amaze](https://huggingface.co/spaces/Ridreb05/project-amaze)
+- 📓 **Training Notebook**: [Collab](https://colab.research.google.com/#fileId=https%3A//huggingface.co/spaces/Ridreb05/project-amaze/blob/main/training/spacecraft_grpo_colab.ipynb)
+- 📝 **Blog Post**: [HuggingFace Blog](https://huggingface.co/spaces/Ridreb05/project-amaze/blob/main/blog/blog.md)
 
 ---
 
