@@ -263,7 +263,7 @@ docker run -p 7860:7860 spacecraft-rendezvous
 
 ### Colab Notebook
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](training/spacecraft_grpo_colab.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](training/spacecraft_grpo_math2.ipynb)
 
 The training notebook:
 1. Installs Unsloth + dependencies
